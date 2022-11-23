@@ -1,7 +1,26 @@
 import boto3
+import yaml
+
+#let's go ahead and load our YAML config file into data
+with open('config.yaml') as f:
+    data = yaml.load(f, Loader=yaml.FullLoader)
+
+def create_ec2(client,tags):
+    try:
+        client.run_instances(MaxCount=1,
+                         MinCount=1,
+                         ImageId="ami-02d1e544b84bf7502",
+                         InstanceType="t2.micro",
+                         TagSpecifications=tags,
+                         #KeyName="private-ec2",
+                         #SecurityGroups=["launch-wizard-6"],
+                         #UserData=boot_apache2_script,
+                         )
+        print("Started")
+    except:
+        print("Failed")
 
 # menu
-
 def main():
     print("Welcome to the EC2 Deploy-o-matic!")
 
@@ -13,6 +32,7 @@ def main():
             print("deploying instance!")
 
             #insert deployment here
+            
 
             #display user information here
             break
