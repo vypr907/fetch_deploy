@@ -1,23 +1,30 @@
+---
 # This YAML configuration specifies a server with two volumes and two users
-server:
-  instance_type: t2.micro
-  ami_type: amzn2
-  architecture: x86_64
-  root_device_type: ebs
-  virtualization_type: hvm
-  min_count: 1
-  max_count: 1
-  volumes:
-    - device: /dev/xvda
-      size_gb: 10
-      type: ext4
-      mount: /
-    - device: /dev/xvdf
-      size_gb: 100
-      type: xfs
-      mount: /data
-  users:
-    - login: user1
-      ssh_key: --user1 ssh public key goes here-- user1@localhost
-    - login: user2
-      ssh_key: --user2 ssh public key goes here-- user2@localhost
+
+InstanceType: t2.micro
+ImageId: ami-0beaa649c482330f7
+MinCount: 1
+MaxCount: 1
+BlockDeviceMappings:
+  - DeviceName: /dev/xvda
+    Ebs:
+      VolumeSize: '10'
+  - DeviceName: /dev/xvdf
+    Ebs:
+      VolumeSize: '100'
+
+  - login: user1
+    ssh_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDa2vCddzZI6jObE+109zZlNNfiPQfzEGRUakGPX+UnQETJe3Smv6i6wQjMwAfpYXe9ArZbqcZFqswU/b2SlFbb/s4PZYeF2tgtbRtYbZFtiOSr3iwaQ0+bZODHqccfqJDiH1DJnShZj4NuFIsSuqRge2wBfIhFlD1Q+xOOYgpGCmCQVrozojvurZdKJ40r2Cw94w4MsPbOVUNheiNxLzIo/yxm9ySyszRVHQiu5I5/zn/jDQCLymHWh+lpLgzPOoYTBZisj/tPlTtD8A2JVvpdgVemevfXd9of9egsIPKVNQ5JqN9s4Z0yv8TDOfWeYOoNb3oxBT0XBDRtFHCnxeX1 user1@localhost
+  - login: user2
+    ssh_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCOSkhYsJ+jRxNvg4AkhZDyYvG5GGFm22GsrJ3bxsc21raKLMqEBEN4TRddICw9PIXvJxJh/YHvnKX7tsVrgb7uIHeswLb+DmRyffSkcMCPxhpP3S0kuk6eB1jfboKgM17UKHN62w4MPrTtJzpzcs3l5XUBmJQwHHoodJuD+gKHaMz4fb7noEyogIyhPPFbtNc5vGrJdfsf+RfOr91/TUXaiFNNaSi/Y9YJolOnzD8OTIvKJ1cGFXf3WHZdzG2f85KeLe012ksC7MJrl85qOHvCaC4kjkLXCx4JEtmvydk7qOHiBtdF82Xm1MBXHPQJujCtI1fLLlYJ9lCQaMaOoFOv user2@localhost
+
+# since I wasn't able to find a way to set the file system for each volume on launch,
+# will manually create the file system on each volume. Then mount the volumes in
+# the correct locations per the assesment parameters.
+UserData: 
+  Fn::Base64: |
+      #!/bin/bash
+      mkfs -t xfs /dev/xvdf
+      mkfs -f ext4 /dev/xvda
+      mount /dev/xvdf /data
+      mount /dev/xvda /
