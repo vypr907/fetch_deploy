@@ -8,23 +8,34 @@ MaxCount: 1
 BlockDeviceMappings:
   - DeviceName: /dev/xvda
     Ebs:
-      VolumeSize: '10'
+      VolumeSize: 10
   - DeviceName: /dev/xvdf
     Ebs:
-      VolumeSize: '100'
-
-  - login: user1
-    ssh_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDa2vCddzZI6jObE+109zZlNNfiPQfzEGRUakGPX+UnQETJe3Smv6i6wQjMwAfpYXe9ArZbqcZFqswU/b2SlFbb/s4PZYeF2tgtbRtYbZFtiOSr3iwaQ0+bZODHqccfqJDiH1DJnShZj4NuFIsSuqRge2wBfIhFlD1Q+xOOYgpGCmCQVrozojvurZdKJ40r2Cw94w4MsPbOVUNheiNxLzIo/yxm9ySyszRVHQiu5I5/zn/jDQCLymHWh+lpLgzPOoYTBZisj/tPlTtD8A2JVvpdgVemevfXd9of9egsIPKVNQ5JqN9s4Z0yv8TDOfWeYOoNb3oxBT0XBDRtFHCnxeX1 user1@localhost
-  - login: user2
-    ssh_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCOSkhYsJ+jRxNvg4AkhZDyYvG5GGFm22GsrJ3bxsc21raKLMqEBEN4TRddICw9PIXvJxJh/YHvnKX7tsVrgb7uIHeswLb+DmRyffSkcMCPxhpP3S0kuk6eB1jfboKgM17UKHN62w4MPrTtJzpzcs3l5XUBmJQwHHoodJuD+gKHaMz4fb7noEyogIyhPPFbtNc5vGrJdfsf+RfOr91/TUXaiFNNaSi/Y9YJolOnzD8OTIvKJ1cGFXf3WHZdzG2f85KeLe012ksC7MJrl85qOHvCaC4kjkLXCx4JEtmvydk7qOHiBtdF82Xm1MBXHPQJujCtI1fLLlYJ9lCQaMaOoFOv user2@localhost
+      VolumeSize: 100
 
 # since I wasn't able to find a way to set the file system for each volume on launch,
 # will manually create the file system on each volume. Then mount the volumes in
 # the correct locations per the assesment parameters.
-UserData: 
-  Fn::Base64: |
-      #!/bin/bash
-      mkfs -t xfs /dev/xvdf
-      mkfs -f ext4 /dev/xvda
-      mount /dev/xvdf /data
-      mount /dev/xvda /
+UserData:  |
+  #!/bin/bash -xe
+  mkfs -t xfs /dev/xvdf
+  mkfs -f ext4 /dev/xvda
+  mount /dev/xvdf /data
+  mount /dev/xvda /
+  #creating users
+  yum install cloud-init
+  cloud_final_modules:
+  - [users-groups, always]
+  users:
+    - name: user1
+      groups: [wheel]
+      sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+      shell: /bin/bash
+      ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDa2vCddzZI6jObE+109zZlNNfiPQfzEGRUakGPX+UnQETJe3Smv6i6wQjMwAfpYXe9ArZbqcZFqswU/b2SlFbb/s4PZYeF2tgtbRtYbZFtiOSr3iwaQ0+bZODHqccfqJDiH1DJnShZj4NuFIsSuqRge2wBfIhFlD1Q+xOOYgpGCmCQVrozojvurZdKJ40r2Cw94w4MsPbOVUNheiNxLzIo/yxm9ySyszRVHQiu5I5/zn/jDQCLymHWh+lpLgzPOoYTBZisj/tPlTtD8A2JVvpdgVemevfXd9of9egsIPKVNQ5JqN9s4Z0yv8TDOfWeYOoNb3oxBT0XBDRtFHCnxeX1
+    - name: user2
+      groups: [wheel]
+      sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+      shell: /bin/bash
+      ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCOSkhYsJ+jRxNvg4AkhZDyYvG5GGFm22GsrJ3bxsc21raKLMqEBEN4TRddICw9PIXvJxJh/YHvnKX7tsVrgb7uIHeswLb+DmRyffSkcMCPxhpP3S0kuk6eB1jfboKgM17UKHN62w4MPrTtJzpzcs3l5XUBmJQwHHoodJuD+gKHaMz4fb7noEyogIyhPPFbtNc5vGrJdfsf+RfOr91/TUXaiFNNaSi/Y9YJolOnzD8OTIvKJ1cGFXf3WHZdzG2f85KeLe012ksC7MJrl85qOHvCaC4kjkLXCx4JEtmvydk7qOHiBtdF82Xm1MBXHPQJujCtI1fLLlYJ9lCQaMaOoFOv

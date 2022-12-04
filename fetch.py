@@ -33,11 +33,11 @@ def main():
             print("deploying instance!")
 
             #insert deployment here
-            #try:
-            myclient.run_instances(**data)
-                #print("Instance Started")
-            #except:
-                #print("Initialization Failed. Exiting.")
+            try:
+                myclient.run_instances(**data)
+                print("Instance Started")
+            except:
+                print("Initialization Failed. Exiting.")
 
             #display user information here
             break
